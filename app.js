@@ -256,7 +256,10 @@ function renderExercise(ex, key, num) {
 /* ---------- 文法點卡片 ---------- */
 function lvBadge(level) { return '<span class="lv lv-' + level + '">' + level + '</span>'; }
 function srcTag(src) {
-  var map = { news: ['src-news', '新聞'], ad: ['src-ad', '廣告'], daily: ['src-daily', '日常'] };
+  var map = {
+    news: ['src-news', '新聞'], ad: ['src-ad', '廣告'], daily: ['src-daily', '日常'],
+    notice: ['src-notice', '告示'], shop: ['src-shop', '購物'], dining: ['src-dining', '用餐']
+  };
   var m = map[src] || map.daily;
   return '<span class="src-tag ' + m[0] + '">' + m[1] + '</span>';
 }

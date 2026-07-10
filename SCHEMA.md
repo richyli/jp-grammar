@@ -73,7 +73,7 @@ window.GRAMMAR_MODULES.push({
 {
   jp: "政府[せいふ]は新[あたら]しい政策[せいさく]を発表[はっぴょう]した。",
   zh: "政府發表了新政策。",
-  source: "news",        // "news" | "ad" | "daily"
+  source: "news",        // "news"新聞 | "ad"廣告 | "daily"日常 | "notice"告示 | "shop"購物 | "dining"用餐
   note: "新聞正文常用普通形（た形）結尾。"   // 選填：一句閱讀提示
 }
 ```
