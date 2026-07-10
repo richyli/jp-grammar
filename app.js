@@ -15,6 +15,10 @@ MODULES.forEach(function (m) {
 var LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1'];
 var LEVEL_COLORS = { N5: '#10b981', N4: '#0ea5e9', N3: '#f59e0b', N2: '#f97316', N1: '#ef4444' };
 
+/* 綜合測驗題庫（quiz/mXX_quiz.js 各自 push；未撰寫的章節缺席不影響其他頁） */
+var QUIZ_INDEX = {};
+(window.GRAMMAR_QUIZZES || []).forEach(function (qz) { if (qz && qz.moduleId) QUIZ_INDEX[qz.moduleId] = qz; });
+
 /* ---------- 進度 ---------- */
 var STORE_KEY = 'jpgc_progress_v1';
 var progress = { done: {}, quiz: {} };
@@ -486,6 +490,19 @@ function renderModule(modId, scrollPointId) {
     });
   }
 
+  var qz = QUIZ_INDEX[mod.id];
+  if (qz && (qz.questions || []).length) {
+    var best = (progress.quizExam && progress.quizExam[mod.id]) || null;
+    var cta = el('div', 'quiz-cta');
+    cta.innerHTML = '<div class="quiz-cta-icon">📝</div>' +
+      '<div class="quiz-cta-body"><div class="quiz-cta-title">本章綜合測驗</div>' +
+      '<div class="quiz-cta-sub">' + qz.questions.length + ' 題閱讀導向試題，涵蓋本章所有文法點。' +
+      (best ? '　最佳成績：<b>' + best.score + '/' + best.total + '</b>（' + Math.round(best.score / best.total * 100) + '%）' : '') +
+      '</div></div><button class="quiz-cta-btn">開始測驗 →</button>';
+    cta.querySelector('.quiz-cta-btn').addEventListener('click', function () { location.hash = '#quiz/' + mod.id; });
+    content.appendChild(cta);
+  }
+
   var nav = el('div', 'mod-nav');
   var idx = MODULES.indexOf(mod);
   var prev = el('button', null, idx > 0 ? '← ' + MODULES[idx - 1].title : '← 回首頁');
@@ -504,6 +521,99 @@ function renderModule(modId, scrollPointId) {
   } else {
     window.scrollTo(0, 0);
   }
+  renderSidebar();
+}
+
+/* ---------- 章末綜合測驗頁 ---------- */
+function renderQuiz(modId) {
+  var mod = null;
+  MODULES.forEach(function (m) { if (m.id === modId) mod = m; });
+  var qz = QUIZ_INDEX[modId];
+  if (!mod || !qz || !(qz.questions || []).length) { renderModule(modId); return; }
+  content.innerHTML = '';
+
+  var head = el('div');
+  head.innerHTML = '<h1>📝 綜合測驗　<span class="muted" style="font-size:18px">' + mod.order + '. ' + mod.title + '</span></h1>' +
+    '<div class="muted">' + qz.questions.length + ' 題．每題標示 JLPT 等級．作答後即時顯示對錯與解說，全部作答完可交卷看成績</div>';
+  content.appendChild(head);
+
+  var back = el('button', 'quiz-back', '← 回到 ' + mod.order + '. ' + mod.title);
+  back.addEventListener('click', function () { location.hash = '#m/' + mod.id; });
+  content.appendChild(back);
+
+  var state = { answered: 0, correct: 0, total: qz.questions.length, byLevel: {} };
+  var bar = el('div', 'quiz-progress-bar');
+  bar.innerHTML = '<div class="qpb-fill"></div><div class="qpb-text">0 / ' + state.total + ' 已作答</div>';
+  content.appendChild(bar);
+  function updateBar() {
+    bar.querySelector('.qpb-fill').style.width = (state.answered / state.total * 100) + '%';
+    bar.querySelector('.qpb-text').textContent = state.answered + ' / ' + state.total + ' 已作答　（答對 ' + state.correct + '）';
+  }
+
+  var list = el('div', 'quiz-list');
+  qz.questions.forEach(function (q, i) {
+    var item = el('div', 'quiz-q');
+    var lv = q.level ? '<span class="lv lv-' + q.level + '">' + q.level + '</span> ' : '';
+    item.appendChild(el('div', 'quiz-q-head', '<span class="quiz-q-num">Q' + (i + 1) + '</span>' + lv +
+      (q.category ? '<span class="p-cat">' + q.category + '</span>' : '')));
+    if (q.passage) item.appendChild(el('div', 'ex-passage jp', furi(q.passage)));
+    item.appendChild(el('div', 'ex-q jp', furi(q.q)));
+    var expl = el('div', 'ex-explain', furi(q.explain || ''));
+    expl.hidden = true;
+    var answered = false;
+    var row = el('div', 'ex-options');
+    (q.options || []).forEach(function (opt, oi) {
+      var b = el('button', 'ex-opt jp', furi(opt));
+      b.addEventListener('click', function () {
+        if (answered) return;
+        answered = true;
+        var ok = (oi === q.answer);
+        state.answered++; if (ok) state.correct++;
+        var lvl = q.level || '—';
+        state.byLevel[lvl] = state.byLevel[lvl] || { c: 0, t: 0 };
+        state.byLevel[lvl].t++; if (ok) state.byLevel[lvl].c++;
+        Array.prototype.forEach.call(row.children, function (btn, j) {
+          btn.disabled = true;
+          if (j === q.answer) btn.classList.add('correct');
+          else if (j === oi) btn.classList.add('wrong');
+        });
+        expl.hidden = false;
+        if (!ok) expl.classList.add('was-wrong');
+        updateBar();
+        if (state.answered === state.total) showResult();
+      });
+      row.appendChild(b);
+    });
+    item.appendChild(row);
+    item.appendChild(expl);
+    list.appendChild(item);
+  });
+  content.appendChild(list);
+
+  var resultBox = el('div', 'quiz-result');
+  resultBox.hidden = true;
+  content.appendChild(resultBox);
+  function showResult() {
+    var pct = Math.round(state.correct / state.total * 100);
+    var grade = pct >= 90 ? '🏆 精通' : pct >= 75 ? '🎉 良好' : pct >= 60 ? '👍 及格' : '📚 再複習';
+    var lvlHtml = LEVELS.filter(function (l) { return state.byLevel[l]; }).map(function (l) {
+      var b = state.byLevel[l];
+      return '<span class="lv lv-' + l + '">' + l + '</span> ' + b.c + '/' + b.t;
+    }).join('　');
+    resultBox.innerHTML = '<div class="quiz-result-grade">' + grade + '</div>' +
+      '<div class="quiz-result-score">' + state.correct + ' / ' + state.total + '　<span class="muted">(' + pct + '%)</span></div>' +
+      (lvlHtml ? '<div class="quiz-result-levels">各等級答對：' + lvlHtml + '</div>' : '') +
+      '<button class="quiz-retry">重新測驗</button>';
+    resultBox.querySelector('.quiz-retry').addEventListener('click', function () { renderQuiz(modId); window.scrollTo(0, 0); });
+    resultBox.hidden = false;
+    resultBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    progress.quizExam = progress.quizExam || {};
+    var prev = progress.quizExam[modId];
+    if (!prev || state.correct > prev.score) progress.quizExam[modId] = { score: state.correct, total: state.total };
+    saveProgress();
+  }
+
+  window.scrollTo(0, 0);
   renderSidebar();
 }
 
@@ -604,7 +714,8 @@ function initFuriToggle() {
 /* ---------- 路由 ---------- */
 function route() {
   var h = location.hash || '#home';
-  if (h.indexOf('#m/') === 0) renderModule(h.slice(3));
+  if (h.indexOf('#quiz/') === 0) renderQuiz(h.slice(6));
+  else if (h.indexOf('#m/') === 0) renderModule(h.slice(3));
   else if (h.indexOf('#p/') === 0) {
     var pid = h.slice(3);
     var it = POINT_INDEX[pid];

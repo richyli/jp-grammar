@@ -8,6 +8,10 @@
 window.__LOAD_ERRORS__ = [];
 window.addEventListener('error', function (e) {
   var src = e.filename || '';
+  var tgtSrc = (e.target && e.target.src) ? e.target.src : '';
+  // 測驗檔尚未逐章補齊前，其 404 不算錯誤（頁面會優雅降級）
+  if (src.indexOf('/quiz/') !== -1 || tgtSrc.indexOf('/quiz/') !== -1) return;
+  if (!src && tgtSrc) { window.__LOAD_ERRORS__.push('missing:' + tgtSrc.split('/').pop()); return; }
   window.__LOAD_ERRORS__.push((src.split('/').pop() || 'inline') + ':' + (e.lineno || '?') + ' ' + (e.message || 'error'));
 }, true);
 </script>
@@ -55,6 +59,25 @@ window.addEventListener('error', function (e) {
 <script src="data/m15_standpoint.js"></script>
 <script src="data/m16_time_limit_degree.js"></script>
 <script src="data/m17_obligation_endstyle.js"></script>
+
+<script src="quiz/m01_quiz.js"></script>
+<script src="quiz/m02_quiz.js"></script>
+<script src="quiz/m03_quiz.js"></script>
+<script src="quiz/m04_quiz.js"></script>
+<script src="quiz/m05_quiz.js"></script>
+<script src="quiz/m06_quiz.js"></script>
+<script src="quiz/m07_quiz.js"></script>
+<script src="quiz/m08_quiz.js"></script>
+<script src="quiz/m09_quiz.js"></script>
+<script src="quiz/m10_quiz.js"></script>
+<script src="quiz/m11_quiz.js"></script>
+<script src="quiz/m12_quiz.js"></script>
+<script src="quiz/m13_quiz.js"></script>
+<script src="quiz/m14_quiz.js"></script>
+<script src="quiz/m15_quiz.js"></script>
+<script src="quiz/m16_quiz.js"></script>
+<script src="quiz/m17_quiz.js"></script>
+
 <script src="app.js"></script>
 </body>
 </html>
