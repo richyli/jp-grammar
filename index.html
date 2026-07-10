@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>日語文法教室 — 讀懂新聞與廣告的系統文法課</title>
+<script>
+window.__LOAD_ERRORS__ = [];
+window.addEventListener('error', function (e) {
+  var src = e.filename || '';
+  window.__LOAD_ERRORS__.push((src.split('/').pop() || 'inline') + ':' + (e.lineno || '?') + ' ' + (e.message || 'error'));
+}, true);
+</script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <button id="menu-toggle" aria-label="選單">☰</button>
+  <nav id="sidebar">
+    <div class="brand" data-nav="home">
+      <div class="brand-title">日語文法教室</div>
+      <div class="brand-sub">讀懂新聞與廣告的系統文法課</div>
+    </div>
+    <div class="sidebar-tools">
+      <input id="search-input" type="search" placeholder="搜尋文法（例：恐れ、ば、敬語）">
+      <div class="tool-row">
+        <button id="furi-toggle" title="顯示/隱藏振假名">ふりがな：開</button>
+        <button id="nav-level" data-nav="level">依等級瀏覽</button>
+      </div>
+    </div>
+    <div id="search-results" hidden></div>
+    <div id="module-nav"></div>
+    <div class="sidebar-foot">
+      <div id="global-progress"></div>
+    </div>
+  </nav>
+  <main id="content"></main>
+</div>
+<div id="validation-report" hidden></div>
+
+<script src="data/m01_skeleton.js"></script>
+<script src="data/m02_case_particles.js"></script>
+<script src="data/m03_topic_particles.js"></script>
+<script src="data/m04_verb_engine.js"></script>
+<script src="data/m05_tense_aspect.js"></script>
+<script src="data/m06_voice_giving.js"></script>
+<script src="data/m07_conditionals.js"></script>
+<script src="data/m08_modality.js"></script>
+<script src="data/m09_noun_modification.js"></script>
+<script src="data/m10_connectives.js"></script>
+<script src="data/m11_keigo.js"></script>
+<script src="data/m12_written_news.js"></script>
+<script src="data/m13_reason_purpose.js"></script>
+<script src="data/m14_contrast.js"></script>
+<script src="data/m15_standpoint.js"></script>
+<script src="data/m16_time_limit_degree.js"></script>
+<script src="data/m17_obligation_endstyle.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
